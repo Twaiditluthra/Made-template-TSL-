@@ -1,0 +1,46 @@
+//We start by building a model that describes our pipeline using a CSV file form web to a SQLite file sink.
+pipeline AirportPipeline {
+
+  //We describe the structure and the syntax of our pipeline.
+
+  DataExtractor
+    -> AirportTextFileInterpreter
+    -> AirportCSVInterpreter
+    -> AirportTableInterpreter 
+    -> AirportDatabaseLoader;
+  
+  // Pipes are chained further and output from the prior block is used as the input for the newer block.
+
+  // Data file is fetched from the url .
+  
+  block DataExtractor oftype HttpExtractor {url: "https://opendata.rhein-kreis-neuss.de/api/explore/v2.1/catalog/datasets/rhein-kreis-neuss-flughafen-weltweit/exports/csv?lang=en&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B";}
+  
+  // Text file is interpreted as a sheet for easier understanding.
+  block AirportTextFileInterpreter oftype TextFileInterpreter {}
+  block AirportCSVInterpreter oftype CSVInterpreter { delimiter : ";";
+  }
+
+
+  // We work on our selected columns and rows respectively.
+     
+  block AirportTableInterpreter oftype TableInterpreter {
+    header: true;
+    columns: [
+      "Lfd. Nummer" oftype integer,
+      "Name des flughanes" oftype text,
+      "Ort" oftype text,
+      "Land" oftype text,
+      "IATA" oftype text,
+      "ICAO" oftype text,
+      "Latitude" oftype decimal,
+      "Longitude" oftype decimal,
+      "Altitude" oftype integer,
+    ];
+  }
+
+  
+  block AirportDatabaseLoader oftype SQLiteLoader {
+    table: "airports";
+    file: "./Airport.sqlite";
+  }
+}
