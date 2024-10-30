@@ -27,7 +27,7 @@ pipeline AirportPipeline {
     header: true;
     columns: [
       "Lfd. Nummer" oftype integer,
-      "Name des flughanes" oftype text,
+      "Name des Flughafens" oftype text,
       "Ort" oftype text,
       "Land" oftype text,
       "IATA" oftype text,
@@ -41,6 +41,6 @@ pipeline AirportPipeline {
   
   block AirportDatabaseLoader oftype SQLiteLoader {
     table: "airports";
-    file: "./airports.sqlite";
+    file: "./airport.sqlite";
   }
 }
