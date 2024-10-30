@@ -22,7 +22,7 @@ pipeline AirportPipeline {
 
 
   // We work on our selected columns and rows respectively.
-     
+
   block AirportTableInterpreter oftype TableInterpreter {
     header: true;
     columns: [
