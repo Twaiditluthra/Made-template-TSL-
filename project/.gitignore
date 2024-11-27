@@ -1,0 +1,36 @@
+# Ignore the data directory to avoid checking in downloaded datasets
+/data/*
+
+# Allow the .gitignore file itself to be committed
+!/data/.gitignore
+
+# Ignore Python cache and temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore virtual environment folders
+venv/
+env/
+
+# Ignore SQLite database files
+*.db
+
+# Ignore log files
+*.log
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE and editor configuration files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore compiled files
+*.so
+*.o
+*.out
+*.exe
