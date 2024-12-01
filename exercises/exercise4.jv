@@ -1,0 +1,109 @@
+// SPDX-FileCopyrightText: 2023 Friedrich-Alexander-Universitat Erlangen-Nurnberg
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
+// Pipeline: Process Mowesta Dataset
+pipeline temperaturePipeline {
+
+    MowestaTempDataExtractor
+        -> MowestaTempDataZipInterpreter
+        -> MowestaTempDataFilePicker
+        -> MowestaTempDataTextFileInterpreter
+        -> MowestaTempDataCSVInterpreter
+        -> MowestaTempDataHeaderWriter
+        -> MowestaTempDatabatteryHeaderRename
+        -> MowestaTempDataTableInterpretor
+        -> MowestaTempDataToFahrenheit
+        -> MowestaBatteryTempDataToFahrenheit
+        -> MowestaTempDataLoader;
+
+    // 1. We go on and download the dataset
+    block MowestaTempDataExtractor oftype HttpExtractor {
+		url: "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip";
+	}
+
+    // 2. After interpreting the nature/type of the file, we unzip it
+    block MowestaTempDataZipInterpreter oftype ArchiveInterpreter {
+        archiveType: "zip";
+    }
+
+    // 3. We select the specific csv file from the folder to which data was extracted
+    block MowestaTempDataFilePicker oftype FilePicker {
+        path:'/data.csv';
+    }
+
+    // 4. We read the csv file as a text file
+	block MowestaTempDataTextFileInterpreter oftype TextFileInterpreter {}
+
+	// 5. We parse the text file data into a CSV format
+	block MowestaTempDataCSVInterpreter oftype CSVInterpreter {
+		delimiter: ";";
+	}
+    
+    // 6. We validate and write new headers(column names) to the selected column cells using range fxns capabilities
+    block MowestaTempDataHeaderWriter oftype CellWriter {
+        at: range A1:E1;
+        write: ["id", "producer","model","month","temperature"];
+    }
+    
+    // 7. We specifically rename the column header at J1 too
+    block MowestaTempDatabatteryHeaderRename oftype CellWriter {
+        at: cell J1;
+        write:["battery_temperature"];
+    }
+
+    // 8. We interpret the table and validate column data
+    block MowestaTempDataTableInterpretor oftype TableInterpreter {
+        header:true;
+        columns: [
+            "id" oftype PostiveInteger,
+            "producer" oftype text,
+            "model" oftype text,
+            "month" oftype MonthType,
+            "temperature" oftype decimal,
+            "battery_temperature" oftype decimal
+        ];
+    }
+    
+    // 9. We described how our data shall be transformed from Celsius to Fahrenheit respectively
+    transform CelsiusToFahrenheit {
+        from Celsius oftype decimal;
+        to Fahrenheit oftype decimal;
+        Fahrenheit: (Celsius * 9/5) + 32;
+    }
+
+    block MowestaTempDataToFahrenheit oftype TableTransformer {
+        inputColumns: ['temperature'];
+        outputColumn: 'temperature';
+        uses: CelsiusToFahrenheit;
+    }
+
+    block MowestaBatteryTempDataToFahrenheit oftype TableTransformer {
+        inputColumns: ['battery_temperature'];
+        outputColumn: 'battery_temperature';
+        uses: CelsiusToFahrenheit;
+    }
+    
+    // 10. We load our processed data into a SQLite Database respectively
+    block MowestaTempDataLoader oftype SQLiteLoader {
+        table:'temperatures';
+        file:'temperatures.sqlite';
+    }
+
+    // 11. Our defined constraints and validations 
+
+    
+    constraint PositiveConstraint on integer:
+        value >= 0;
+
+    valuetype PostiveInteger oftype integer {
+        constraints: [PositiveConstraint];
+    }
+
+    constraint MonthConstraint on integer:
+        value >= 1 and value <= 12;
+    
+    valuetype MonthType oftype integer {
+        constraints:[MonthConstraint];
+    }
+}
