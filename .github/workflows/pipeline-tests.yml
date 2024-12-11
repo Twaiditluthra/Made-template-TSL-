@@ -28,7 +28,7 @@ jobs:
           fi
 
       - name: Make tests.sh executable
-        run: chmod +x ./tests.sh
+        run: chmod +x ./project/tests.sh
 
       - name: Run tests
         run: ./tests.sh
