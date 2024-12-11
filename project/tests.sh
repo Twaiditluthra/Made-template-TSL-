@@ -40,16 +40,23 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Locate tests.py dynamically
-TEST_FILE="./project/test.py"
-if [ ! -f "$TEST_FILE" ]; then
-    echo "tests.py not found in ./project/. Please ensure it exists."
+# Locate the tests folder and ensure test files exist dynamically
+TESTS_DIR="./project/tests"
+if [ ! -d "$TESTS_DIR" ]; then
+    echo "Tests directory not found in ./project/. Please ensure it exists."
+    exit 1
+fi
+
+# Find test files dynamically (assuming test files are named with test_ prefix)
+TEST_FILES=$(find "$TESTS_DIR" -type f -name "test_*.py")
+if [ -z "$TEST_FILES" ]; then
+    echo "No test files found in $TESTS_DIR. Please ensure test files are present."
     exit 1
 fi
 
 # Run the tests
 echo "Running test cases..."
-pytest "$TEST_FILE"
+pytest $TEST_FILES
 
 # Check if tests passed
 if [ $? -ne 0 ]; then
@@ -60,3 +67,4 @@ fi
 echo "ETL pipeline and tests executed successfully."
 
 exit 0
+
