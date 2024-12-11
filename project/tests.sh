@@ -6,9 +6,16 @@ if ! command -v python3 >/dev/null 2>&1; then
     exit 1
 fi
 
+# Locate requirements.txt dynamically
+REQUIREMENTS_FILE="./project/requirements.txt"
+if [ ! -f "$REQUIREMENTS_FILE" ]; then
+    echo "requirements.txt not found in ./project/. Please ensure it exists."
+    exit 1
+fi
+
 # Install required Python packages
 echo "Installing required Python packages..."
-python3 -m pip install -r ./requirements.txt
+python3 -m pip install -r "$REQUIREMENTS_FILE"
 
 # Ensure pytest is installed
 if ! python3 -m pytest --version >/dev/null 2>&1; then
@@ -16,19 +23,33 @@ if ! python3 -m pytest --version >/dev/null 2>&1; then
     python3 -m pip install pytest
 fi
 
-# Run the data pipeline
-echo "Running data pipeline..."
-python3 ./pipeline.py
+# Locate pipeline.py dynamically
+PIPELINE_FILE="./project/pipeline.py"
+if [ ! -f "$PIPELINE_FILE" ]; then
+    echo "pipeline.py not found in ./project/. Please ensure it exists."
+    exit 1
+fi
 
-# Check if the data pipeline ran successfully
+# Run the ETL pipeline
+echo "Running ETL pipeline..."
+python3 "$PIPELINE_FILE"
+
+# Check if the ETL pipeline ran successfully
 if [ $? -ne 0 ]; then
-    echo "Data pipeline failed. Skipping tests."
+    echo "ETL pipeline failed. Skipping tests."
+    exit 1
+fi
+
+# Locate test.py dynamically
+TEST_FILE="./project/test.py"
+if [ ! -f "$TEST_FILE" ]; then
+    echo "test.py not found in ./project/. Please ensure it exists."
     exit 1
 fi
 
 # Run the tests
 echo "Running test cases..."
-pytest ./tests/test_pipeline.py
+pytest "$TEST_FILE"
 
 # Check if tests passed
 if [ $? -ne 0 ]; then
@@ -36,6 +57,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Tests passed successfully."
+echo "ETL pipeline and tests executed successfully."
 
 exit 0
