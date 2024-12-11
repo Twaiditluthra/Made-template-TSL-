@@ -40,10 +40,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Locate test.py dynamically
+# Locate tests.py dynamically
 TEST_FILE="./project/test.py"
 if [ ! -f "$TEST_FILE" ]; then
-    echo "test.py not found in ./project/. Please ensure it exists."
+    echo "tests.py not found in ./project/. Please ensure it exists."
     exit 1
 fi
 
