@@ -45,13 +45,13 @@ pipeline GTFSPipeline {
     }
 
     // 8. Define a value type for zone_id with constraints
-    valuetype Zone1645 oftype integer {
+    valuetype Zone1925 oftype integer {
         constraints: [ZoneIdConstraint]; // The zone_id must satisfy a specific condition
     }
 
     // 9. Constraint ensuring that the zone_id value equals 1645
     constraint ZoneIdConstraint on integer:
-        value == 1645;
+        value == 1925;
 
     // 10. Define a value type for geographical coordinates
     valuetype GeoCoordinate90 oftype decimal {
@@ -74,7 +74,7 @@ pipeline GTFSPipeline {
             "stop_name" oftype text,        // Name of the stop (text)
             "stop_lat" oftype GeoCoordinate90, // Latitude of the stop (decimal with constraints)
             "stop_lon" oftype GeoCoordinate90, // Longitude of the stop (decimal with constraints)
-            "zone_id" oftype Zone1645,      // Zone ID (integer constrained to 1645)
+            "zone_id" oftype Zone1925,      // Zone ID (integer constrained to 1645)
         ];
     }
 
@@ -84,3 +84,4 @@ pipeline GTFSPipeline {
         file: "gtfs.sqlite";   // Name of the SQLite database file
     }
 }
+
