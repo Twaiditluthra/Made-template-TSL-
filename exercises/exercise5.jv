@@ -1,0 +1,86 @@
+// 1. Define the GTFS pipeline flow
+pipeline GTFSPipeline {
+
+    GTFSExtractor -> GTFSZipInterpreter;
+    // GTFSZipInterpreter processes the archive and passes it to the next steps
+    GTFSZipInterpreter
+        -> GTFSFilePicker
+        -> GTFSTextFileInterpreter
+        -> GTFSCSVInterpreter
+        -> GTFSColumnDeleter
+        -> GTFSTableInterpreter
+        -> GTFSLoader;
+
+    // 2. Extract the GTFS ZIP file from the specified URL
+    block GTFSExtractor oftype HttpExtractor {
+        url: "https://gtfs.rhoenenergie-bus.de/GTFS.zip"; 
+    }
+
+    // 3. Interpret the extracted file as a ZIP archive
+    block GTFSZipInterpreter oftype ArchiveInterpreter {
+        archiveType: "zip"; // Specify that the archive type is ZIP
+    }
+
+    // 4. Select the file named "stops.txt" from the extracted ZIP archive
+    block GTFSFilePicker oftype FilePicker {
+        path: "/stops.txt"; // Path to the specific file to process
+    }
+
+    // 5. Interpret the "stops.txt" file as a text file with UTF-8 encoding
+    block GTFSTextFileInterpreter oftype TextFileInterpreter {
+        encoding: "utf8"; // UTF-8 encoding ensures proper text interpretation (including special characters)
+    }
+
+    // 6. Interpret the text file as a CSV file
+    block GTFSCSVInterpreter oftype CSVInterpreter {
+        delimiter: ',';      // CSV delimiter is a comma
+        enclosing: '"';       // Fields enclosed in double quotes
+        enclosingEscape: '"'; // Escape character for enclosed quotes
+    }
+
+    // 7. Remove unnecessary columns from the CSV file
+    block GTFSColumnDeleter oftype ColumnDeleter {
+        delete: [column B, column D, column H, column I, column J, column K, column L];
+        // Exclude specific columns that are not needed in the further steps
+    }
+
+    // 8. Define a value type for zone_id with constraints
+    valuetype Zone1645 oftype integer {
+        constraints: [ZoneIdConstraint]; // The zone_id must satisfy a specific condition
+    }
+
+    // 9. Constraint ensuring that the zone_id value equals 1645
+    constraint ZoneIdConstraint on integer:
+        value == 1645;
+
+    // 10. Define a value type for geographical coordinates
+    valuetype GeoCoordinate90 oftype decimal {
+        constraints: [GeoCoordinateRange]; // Apply coordinate range constraints
+    }
+
+    // 11. Constraint ensuring geographical coordinates are between -90 and 90 degrees
+    constraint GeoCoordinateRange oftype RangeConstraint {
+        lowerBound: -90;              // Lower bound for latitude/longitude
+        lowerBoundInclusive: true;    // Include -90 in the range
+        upperBound: 90;               // Upper bound for latitude/longitude
+        upperBoundInclusive: true;    // Include 90 in the range
+    }
+
+    // 12. Interpret the file as a table with a defined schema
+    block GTFSTableInterpreter oftype TableInterpreter {
+        header: true; // The first row of the file contains column headers
+        columns: [
+            "stop_id" oftype integer,       // ID of the stop (integer)
+            "stop_name" oftype text,        // Name of the stop (text)
+            "stop_lat" oftype GeoCoordinate90, // Latitude of the stop (decimal with constraints)
+            "stop_lon" oftype GeoCoordinate90, // Longitude of the stop (decimal with constraints)
+            "zone_id" oftype Zone1645,      // Zone ID (integer constrained to 1645)
+        ];
+    }
+
+    // 13. Load the processed table into an SQLite database
+    block GTFSLoader oftype SQLiteLoader {
+        table: "stops";        // Table name in the SQLite database
+        file: "gtfs.sqlite";   // Name of the SQLite database file
+    }
+}
