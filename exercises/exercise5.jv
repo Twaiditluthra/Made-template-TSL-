@@ -49,7 +49,7 @@ pipeline GTFSPipeline {
         constraints: [ZoneIdConstraint]; // The zone_id must satisfy a specific condition
     }
 
-    // 9. Constraint ensuring that the zone_id value equals 1645
+    // 9. Constraint ensuring that the zone_id value equals 1925
     constraint ZoneIdConstraint on integer:
         value == 1925;
 
