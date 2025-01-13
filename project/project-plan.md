@@ -14,7 +14,6 @@ This study investigates the travel patterns of non-resident tourists visiting Ar
 
 ## Datasources
 
-<!-- Describe each datasources you plan to use in a section. Use the prefic "DatasourceX" where X is the id of the datasource. -->
 
 * Data URL: "https://datos.yvera.gob.ar/dataset/4cbf7d4a-702a-4911-8c1e-717a45214902/resource/fdfe0ae4-4acc-4421-aa48-6149a02bc615/download/turistas-no-residentes-serie.csv"
 * Data Type: CSV
@@ -32,7 +31,4 @@ Description: The dataset provides time-series data on non-resident tourist arriv
 6. Strategies Proposal: Suggest solutions and prioritize ideas{surveys for further analysis}.
 7. Reporting: Compile findings, limitations and present recommendations.
 8. Project Review: Assess outcomes and lessons learned.
-1. Example Issue [#1][i1]
-2. ...
 
-[i1]: https://github.com/jvalue/made-template/issues/1
